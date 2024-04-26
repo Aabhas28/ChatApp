@@ -21,7 +21,7 @@ const ChatDetails = ({chatId}) => {
 
   const [text, setText] = useState("");
 
-  console.log(chatId)
+  
 
   const getChatDetails = async () => {
     try {
