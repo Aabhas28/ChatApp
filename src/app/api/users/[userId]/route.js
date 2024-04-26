@@ -1,5 +1,6 @@
 import Chat from "@/models/Chat";
 import User from "@/models/User";
+import Message from "@/models/Message";
 import { connectToDB } from "@/mongoDB";
 
 export const GET = async (req, { params }) => {
@@ -13,6 +14,13 @@ export const GET = async (req, { params }) => {
       .populate({
         path: "members",
         model: User,
+      }).populate({
+        path: "messages",
+        model: Message,
+        populate: {
+          path: "sender seenBy",
+          model: User,
+        },
       })
       .exec();
 

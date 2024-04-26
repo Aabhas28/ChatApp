@@ -14,8 +14,12 @@ const ChatBox = ({ chat, currentUser, currentChatId}) => {
 
       const lastMessage = chat?.messages?.length > 0 && chat?.messages[chat?.messages.length - 1];
 
+      const seen = lastMessage?.seenBy?.find(
+        (member) => member._id === currentUser._id
+      );
+
   return (
-    <div className={`chat-box ${chat._id === currentChatId ? "bg-blue-2" : ""}`}
+    <div className="chat-box" 
      onClick={() => router.push(`/chats/${chat._id}`)}    >
      <div className="chat-info">
      {chat?.isGroup ? (
@@ -40,6 +44,29 @@ const ChatBox = ({ chat, currentUser, currentChatId}) => {
           )}
 
           {!lastMessage && <p className="text-small-bold">Started a chat</p>}
+
+          {lastMessage?.photo ? (
+            lastMessage?.sender?._id === currentUser._id ? (
+              <p className="text-small-medium text-grey-3">You sent a photo</p>
+            ) : (
+              <p
+                className={`${
+                  seen ? "text-small-medium text-grey-3" : "text-small-bold"
+                }`}
+              >
+                Received a photo
+              </p>
+            )
+          ) : (
+            <p
+              className={`last-message ${
+                seen ? "text-small-medium text-grey-3" : "text-small-bold"
+              }`}
+            >
+              {lastMessage?.text}
+            </p>
+          )}
+
         </div>
 
         <div>

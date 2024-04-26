@@ -6,6 +6,9 @@ import Link from "next/link";
 import { AddPhotoAlternate } from "@mui/icons-material";
 import { CldUploadButton } from "next-cloudinary";
 import { useSession } from "next-auth/react";
+import MessageBox from "@/components/MessageBox";
+import { pusherClient } from "@/lib/pusher";
+
 
 
 const ChatDetails = ({chatId}) => {
@@ -42,8 +45,75 @@ const ChatDetails = ({chatId}) => {
     if (currentUser && chatId) getChatDetails();
   }, [currentUser, chatId]);
 
-  console.log(chat)
-  console.log(otherMembers)
+  const sendText = async () => {
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId,
+          currentUserId: currentUser._id,
+          text,
+        }),
+      });
+
+      if (res.ok) {
+        setText("");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sendPhoto = async (result) => {
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId,
+          currentUserId: currentUser._id,
+          photo: result?.info?.secure_url,
+        }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    pusherClient.subscribe(chatId);
+
+    const handleMessage = async (newMessage) => {
+      setChat((prevChat) => {
+        return {
+          ...prevChat,
+          messages: [...prevChat.messages, newMessage],
+        };
+      });
+    };
+
+    pusherClient.bind("new-message", handleMessage);
+
+    return () => {
+      pusherClient.unsubscribe(chatId);
+      pusherClient.unbind("new-message", handleMessage);
+    };
+  }, [chatId]);
+
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [chat?.messages]);
+
+  
 
   return loading ? (
     <Loader />
@@ -81,10 +151,24 @@ const ChatDetails = ({chatId}) => {
             </>
           )}
         </div>
-        <div className="chat-body"></div>
+        <div className="chat-body">
+        {chat?.messages?.map((message, index) => (
+            <MessageBox
+              key={index}
+              message={message}
+              currentUser={currentUser}
+            />
+          ))}
+          <div ref={bottomRef} />
+        </div>
         <div className="send-message">
           <div className="prepare-message">
             
+          <CldUploadButton
+              options={{ maxFiles: 1 }}
+              onSuccess={sendPhoto}
+              uploadPreset="akccb9gd"
+            >
               <AddPhotoAlternate
                 sx={{
                   fontSize: "35px",
@@ -93,6 +177,8 @@ const ChatDetails = ({chatId}) => {
                   "&:hover": { color: "red" },
                 }}
               />
+            </CldUploadButton>
+
             <input
               type="text"
               placeholder="Write a message..."
@@ -103,7 +189,7 @@ const ChatDetails = ({chatId}) => {
             />
           </div>
 
-          <div>
+          <div onClick={sendText}>
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAACUCAMAAABC4vDmAAAAaVBMVEX///8AAAD5+fl3d3f8/Pz09PTx8fHn5+cEBATQ0NB0dHRQUFAgICAvLy9YWFjq6uqSkpKhoaGLi4ve3t6+vr6EhIQ/Pz+1tbVtbW3FxcVISEgpKSkMDAynp6cSEhJdXV1lZWU2NjYZGRlXuuPKAAADL0lEQVR4nO2b6XaqMBCASRiWiCxhEVBxe/+HvElAi4pgzy1JfszXc4Sqha+TMRMSdBwEQRAEQRAEQRAEQRAEQRAEQf4KMC3wDPRGdllBXVK1NS0yhjYk6gKrlISUSwiJK9b/ZomckiJkuy89W5QeUtIrYzK7bDC7S4UhIQe3pVZJDcS8MG3kvEmNkt5gzN6kBAlXfQSAKa8pKUL2udFWnJYS7FrfPilCImNJPyMl+ojNEC7Qm1wzUqFqxTrVbzUbKYXoI6jm/mFZSnCpA51O30mR4y4baa0ete+kJI0YRzigftbWUlLhgk/Yv+HcaUp6MfL8ilCZbxvm6bBi3N1vl5XuD6dzR9dWGvBYzfMm2sW3L4J2ywoRrrXzaji8lwas5JmbPAVuKt9ilfQaPoY/J6B+UNT5JdrHp8/ZddVUGF//b69oS16d39zusataT4vXuyNQGrC6y5roej28ZNwx6a8YNZagl1OJuOXJcZRiau/Qmhg2g+enRZltkmh33Y7aUSlds0JX/6CQ2S77CTc6TGcUuV1qfTkFQVt3uZvsrofj516B5K03tNyKzecHrC27KoqPUwqj3kAqJnzdAbxsp5K7TbL7ojfvK/N57WsKWs1EZiJUZK96zXU/cXTzkzPh0hBGDtmD1ZV+M8gTPcCmLy1rp/ey1CN6e65toP5lpG6XUmOhW5JSgYozNROjrZ4sR+p47nxHw9XCL6SOuYEByrzUycwcxwcpmUqHpjRh9FlKBClnw8WnNVJRf91piJGUHAH0lSZhvtEJ9XGklFEYDXMZVkj19SRRk2SaZ+4+S5FHxQVD+T0lZW7i9RUppeZTNjor7gJ9pIYVLFsQI89TJJMbtJbceWjuWhUkBaT2pNIDixptjI1OCIIgCIIgCIIgCIIgCIIgCIIgCILMAM+PcL8/4v71ORi+ndyvLMN4sRJej/MnC4bqJAHv9wMnoEpJHvp+I7e8texpzRTUMnNBKSvExneo3IDXpg5j8gkQzxftf61Fg+N5RQWUAvVzWqXgU+oJoPLFrngxS4UoiCd8D+QL/R/V57TlGQsy36ldp4hSXueMZ62X+63Yyzo+f9p/pFchXwj92RUAAAAASUVORK5CYII=" alt="send" className="send-icon" />
           </div>
         </div>
