@@ -21,6 +21,7 @@ const Contacts = () => {
       );
       const data = await res.json();
       setContacts(data.filter((contact) => contact._id !== currentUser._id));
+      setContacts(data.filter((data)=> data._id !== currentUser._id))
       setLoading(false);
     } catch (err) {
       console.log(err);
