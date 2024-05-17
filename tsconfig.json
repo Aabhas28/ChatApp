@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/Form.jsx", "src/mongoDB/index.js", "src/app/api/auth/[...nextauth]/route.js", "src/components/TopBar.jsx", "src/components/chatList.jsx", "src/app/(root)/chats/page.jsx", "src/app/api/chats/[chatsId]/page.js", "src/app/api/auth/register/route.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/Form.jsx", "src/mongoDB/index.js", "src/app/api/auth/[...nextauth]/route.js", "src/components/TopBar.jsx", "src/components/chatList.jsx", "src/app/(root)/chats/page.jsx", "src/app/api/chats/[chatsId]/page.js", "src/app/api/auth/register/route.js"],
   "exclude": ["node_modules"]
 }
