@@ -20,7 +20,7 @@ const TopBar = () => {
   return (
     <div className="topbar">
       <Link href="/chats">
-        <img src={'https://static-00.iconduck.com/assets.00/chat-icon-2048x2048-i7er18st.png' || "HALLOCHAT"} alt="logo" className="w-10 h-10" />
+        <img src={'https://static-00.iconduck.com/assets.00/chat-icon-2048x2048-i7er18st.png' || "HALLOCHAT"} alt="w-52 h-auto" className="w-10 h-10" />
       </Link>
 
       <div className="menu">

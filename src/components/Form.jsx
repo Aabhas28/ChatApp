@@ -62,8 +62,7 @@ const Form = ({ type }) => {
   return (
     <div className="auth">
       <div className="content">
-        <img src="/public/assets/logo.png" alt="logo" className="logo" />
-
+      <img src="/assets/logo.png" alt="logo" className="w-52 h-auto" />
         <form className="form" onSubmit={handleSubmit(onSubmit)}>
           {type === "register" && (
             <div>
